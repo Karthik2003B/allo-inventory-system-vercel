@@ -1,21 +1,19 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { prisma } from "../../../../../lib/prisma";
 
 export async function POST(
-  req: NextRequest,
-  context: any
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
 ) {
 
   try {
 
-    const reservationId =
-      context.params.id;
+    const { id } = await params;
 
-    // Find reservation
     const reservation =
       await prisma.reservation.findUnique({
         where: {
-          id: reservationId,
+          id,
         },
       });
 
@@ -24,17 +22,6 @@ export async function POST(
       return NextResponse.json(
         { error: "Reservation not found" },
         { status: 404 }
-      );
-    }
-
-    // Already released
-    if (
-      reservation.status === "RELEASED"
-    ) {
-
-      return NextResponse.json(
-        { error: "Already released" },
-        { status: 400 }
       );
     }
 
@@ -72,10 +59,10 @@ export async function POST(
       },
     });
 
-    // Update reservation status
+    // Update reservation
     await prisma.reservation.update({
       where: {
-        id: reservation.id,
+        id,
       },
 
       data: {
@@ -84,7 +71,7 @@ export async function POST(
     });
 
     return NextResponse.redirect(
-      new URL("/", req.url)
+      new URL("/", request.url)
     );
 
   } catch (error) {
