@@ -3,19 +3,19 @@ import { prisma } from "../../../../../lib/prisma";
 
 export async function POST(
   req: NextRequest,
-  context: {
-    params: Promise<{ id: string }>;
-  }
+  context: any
 ) {
 
   try {
 
-    const { id } = await context.params;
+    const reservationId =
+      context.params.id;
 
+    // Find reservation
     const reservation =
       await prisma.reservation.findUnique({
         where: {
-          id,
+          id: reservationId,
         },
       });
 
@@ -27,10 +27,24 @@ export async function POST(
       );
     }
 
+    // Already released
+    if (
+      reservation.status === "RELEASED"
+    ) {
+
+      return NextResponse.json(
+        { error: "Already released" },
+        { status: 400 }
+      );
+    }
+
+    // Restore inventory
     const inventory =
       await prisma.inventory.findFirst({
         where: {
-          productId: reservation.productId,
+          productId:
+            reservation.productId,
+
           warehouseId:
             reservation.warehouseId,
         },
@@ -44,7 +58,7 @@ export async function POST(
       );
     }
 
-    // Release reserved stock
+    // Reduce reserved quantity
     await prisma.inventory.update({
       where: {
         id: inventory.id,
@@ -58,10 +72,10 @@ export async function POST(
       },
     });
 
-    // Update reservation
+    // Update reservation status
     await prisma.reservation.update({
       where: {
-        id,
+        id: reservation.id,
       },
 
       data: {
