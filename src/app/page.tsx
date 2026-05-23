@@ -1,18 +1,38 @@
-async function getProducts() {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/products`, {
-    cache: "no-store",
-  });
-
-  if (!res.ok) {
-    throw new Error("Failed to fetch products");
-  }
-
-  return res.json();
-}
+import { prisma } from "../lib/prisma";
 
 export default async function HomePage() {
 
-  const products = await getProducts();
+  const products =
+    await prisma.product.findMany({
+      include: {
+        inventories: {
+          include: {
+            warehouse: true,
+          },
+        },
+      },
+    });
+
+  const formattedProducts =
+    products.map((product: any) => ({
+      id: product.id,
+      name: product.name,
+
+      inventories:
+        product.inventories.map(
+          (inventory: any) => ({
+            warehouseId:
+              inventory.warehouse.id,
+
+            warehouseName:
+              inventory.warehouse.name,
+
+            availableQuantity:
+              inventory.totalQuantity -
+              inventory.reservedQuantity,
+          })
+        ),
+    }));
 
   return (
     <main className="min-h-screen p-10">
@@ -23,7 +43,8 @@ export default async function HomePage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-        {products.map((product: any) => (
+        {formattedProducts.map(
+          (product: any) => (
 
           <div
             key={product.id}
@@ -36,7 +57,8 @@ export default async function HomePage() {
 
             <div className="space-y-4">
 
-              {product.inventories.map((inventory: any) => (
+              {product.inventories.map(
+                (inventory: any) => (
 
                 <form
                   key={inventory.warehouseId}
@@ -54,7 +76,9 @@ export default async function HomePage() {
                     <p>
                       Available Stock:{" "}
                       <span className="font-bold">
-                        {inventory.availableQuantity}
+                        {
+                          inventory.availableQuantity
+                        }
                       </span>
                     </p>
 
