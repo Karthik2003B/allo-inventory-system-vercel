@@ -1,23 +1,22 @@
-async function getProducts() {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/products`, {
-    cache: "no-store",
-  });
-
-  if (!res.ok) {
-    throw new Error("Failed to fetch products");
-  }
-
-  return res.json();
-}
+import { prisma } from "../lib/prisma";
 
 export default async function HomePage() {
 
-  const products = await getProducts();
+  const products =
+    await prisma.product.findMany({
+      include: {
+        inventories: {
+          include: {
+            warehouse: true,
+          },
+        },
+      },
+    });
 
   return (
     <main className="min-h-screen p-10">
 
-      <h1 className="text-4xl font-bold mb-8">
+      <h1 className="text-5xl font-bold mb-8">
         Inventory System
       </h1>
 
@@ -27,69 +26,79 @@ export default async function HomePage() {
 
           <div
             key={product.id}
-            className="border rounded-2xl p-6 shadow-sm"
+            className="border rounded-2xl p-6"
           >
 
-            <h2 className="text-2xl font-semibold mb-4">
+            <h2 className="text-3xl font-semibold mb-6">
               {product.name}
             </h2>
 
             <div className="space-y-4">
 
-              {product.inventories.map((inventory: any) => (
+              {product.inventories.map(
+                (inventory: any) => {
 
-                <form
-                  key={inventory.warehouseId}
-                  action="/api/reservations"
-                  method="POST"
-                  className="border rounded-lg p-4 flex justify-between items-center"
-                >
+                const availableStock =
+                  inventory.totalQuantity -
+                  inventory.reservedQuantity;
 
-                  <div>
+                return (
 
-                    <p className="font-medium">
-                      {inventory.warehouseName}
-                    </p>
+                  <form
+                    key={inventory.id}
+                    action="/api/reservations"
+                    method="POST"
+                    className="border rounded-xl p-4 flex justify-between items-center"
+                  >
 
-                    <p>
-                      Available Stock:{" "}
-                      <span className="font-bold">
-                        {inventory.availableQuantity}
-                      </span>
-                    </p>
+                    <div>
 
-                  </div>
+                      <p className="text-lg font-medium">
+                        {
+                          inventory.warehouse.name
+                        }
+                      </p>
 
-                  <div>
+                      <p>
+                        Available Stock:{" "}
+                        {availableStock}
+                      </p>
 
-                    <input
-                      type="hidden"
-                      name="productId"
-                      value={product.id}
-                    />
+                    </div>
 
-                    <input
-                      type="hidden"
-                      name="warehouseId"
-                      value={inventory.warehouseId}
-                    />
+                    <div>
 
-                    <input
-                      type="hidden"
-                      name="quantity"
-                      value="1"
-                    />
+                      <input
+                        type="hidden"
+                        name="productId"
+                        value={product.id}
+                      />
 
-                    <button
-                      className="bg-black text-white px-4 py-2 rounded-lg"
-                    >
-                      Reserve
-                    </button>
+                      <input
+                        type="hidden"
+                        name="warehouseId"
+                        value={
+                          inventory.warehouse.id
+                        }
+                      />
 
-                  </div>
+                      <input
+                        type="hidden"
+                        name="quantity"
+                        value="1"
+                      />
 
-                </form>
-              ))}
+                      <button
+                        className="bg-black text-white px-5 py-2 rounded-lg"
+                      >
+                        Reserve
+                      </button>
+
+                    </div>
+
+                  </form>
+                );
+              })}
 
             </div>
 
