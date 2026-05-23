@@ -1,0 +1,9 @@
+{
+    "files.associations": {
+        "*.go": "go",
+        "plyconfig.json": "jsonc"
+    },
+    "java.project.sourcePaths": [
+        "src/app/api"
+    ]
+}
