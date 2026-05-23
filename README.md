@@ -237,7 +237,7 @@ Displays:
 ## 1. Clone Repository
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/allo-inventory-system.git
+git clone https://github.com/Karthik2003B/allo-inventory-system.git
 ```
 
 ---
