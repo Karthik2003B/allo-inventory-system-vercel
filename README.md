@@ -22,6 +22,7 @@ A Next.js inventory reservation system built for multi-warehouse ecommerce inven
 
 ## Running Locally
 
+
 ```bash
 npm install
 npm run dev
