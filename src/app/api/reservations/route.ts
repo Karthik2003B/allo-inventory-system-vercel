@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
 
     const reservation =
       await prisma.$transaction(
-        async (tx) => {
+        async (tx: any) => {
 
           // Get latest inventory
           const inventory =
