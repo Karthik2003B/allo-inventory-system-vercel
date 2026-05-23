@@ -12,7 +12,7 @@ The system prevents overselling during checkout by introducing temporary invento
 Deployed URL:
 
 ```text
-https://your-vercel-url.vercel.app
+[https://your-vercel-url.vercel.app](https://allo-inventory-system-vercel-ymuu-1c4rfc7vq.vercel.app)
 ```
 
 GitHub Repository:
